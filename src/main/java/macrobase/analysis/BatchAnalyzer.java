@@ -12,6 +12,7 @@ import macrobase.conf.ConfigurationException;
 import macrobase.conf.MacroBaseConf;
 import macrobase.datamodel.Datum;
 import macrobase.datasetanalysis.DatasetAnalysis;
+import macrobase.ingest.DataLoader;
 import macrobase.ingest.DatumEncoder;
 import macrobase.ingest.SQLLoader;
 import macrobase.ingest.transform.DataTransformation;
@@ -32,10 +33,14 @@ public class BatchAnalyzer extends BaseAnalyzer {
         
         
         try {
-			DatasetAnalysis da = new DatasetAnalysis((SQLLoader) constructLoader());
-			for(String columnName: da.getColumnNames()){
-				System.out.println( da.getColumnInfo(columnName) );
-			}
+        	DataLoader loader =  constructLoader();
+        	if(loader instanceof SQLLoader){
+        		DatasetAnalysis da = new DatasetAnalysis((SQLLoader) constructLoader());
+    			for(String columnName: da.getColumnNames()){
+    				System.out.println( da.getColumnInfo(columnName) );
+    			}
+        	}
+			
 		} catch (SQLException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
