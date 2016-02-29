@@ -76,7 +76,7 @@ public class DatasetAnalysis {
 		
 		sql = String.format( "SELECT %s FROM (%s) baseQuery" ,
 				"min(" +  columnName+"), " + "max( " + columnName + "), " + "avg(" + columnName + ")",
-				sqlLoader.getBaseQuery());
+				sqlLoader.getBaseQuery().replaceAll(";", ""));
 	
 		
 //		sql = String.format("select "
