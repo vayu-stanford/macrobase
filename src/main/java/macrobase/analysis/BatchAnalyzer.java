@@ -11,8 +11,9 @@ import macrobase.analysis.summary.itemset.result.ItemsetResult;
 import macrobase.conf.ConfigurationException;
 import macrobase.conf.MacroBaseConf;
 import macrobase.datamodel.Datum;
+import macrobase.datasetanalysis.DatasetAnalysis;
 import macrobase.ingest.DatumEncoder;
-
+import macrobase.ingest.SQLLoader;
 import macrobase.ingest.transform.DataTransformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,18 @@ public class BatchAnalyzer extends BaseAnalyzer {
     public BatchAnalyzer(MacroBaseConf conf) throws ConfigurationException {
         super(conf);
         conf.sanityCheckBatch();
+        
+        
+        try {
+			DatasetAnalysis da = new DatasetAnalysis((SQLLoader) constructLoader());
+			for(String columnName: da.getColumnNames()){
+				System.out.println( da.getColumnInfo(columnName) );
+			}
+		} catch (SQLException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
     }
 
     public AnalysisResult analyze() throws SQLException, IOException, ConfigurationException {
