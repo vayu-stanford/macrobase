@@ -2,6 +2,7 @@ package macrobase.analysis.summary.result;
 
 import macrobase.datamodel.Datum;
 
+// TODO: REMOVE
 public class DatumWithScore {
     private Datum datum;
     private Double score;
