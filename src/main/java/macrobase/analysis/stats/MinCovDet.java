@@ -269,4 +269,10 @@ public class MinCovDet extends BatchTrainScore {
         // https://en.wikipedia.org/wiki/Mahalanobis_distance#Normal_distributions
         return (new ChiSquaredDistribution(p)).inverseCumulativeProbability(cdf);
     }
+
+	@Override
+	public void train(BatchModel batchModel) {
+		// TODO Auto-generated method stub
+		
+	}
 }

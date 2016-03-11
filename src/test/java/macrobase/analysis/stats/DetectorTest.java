@@ -39,6 +39,12 @@ public class DetectorTest {
         public double getZScoreEquivalent(double zscore) {
             return 3;
         }
+
+		@Override
+		public void train(BatchModel batchModel) {
+			// TODO Auto-generated method stub
+			
+		}
     }
 
     final int NUM_OUTLIERS = 10;

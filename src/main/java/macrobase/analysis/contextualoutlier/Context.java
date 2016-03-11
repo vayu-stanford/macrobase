@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import macrobase.analysis.stats.BatchTrainScore.BatchModel;
 import macrobase.datamodel.Datum;
 import macrobase.ingest.DatumEncoder;
 
@@ -27,6 +28,8 @@ public class Context {
 	 * A list of tuple ids that this unit contains
 	 */
 	private List<Integer> tids;
+	
+	
 	
 	/**
 	 * Initialize a one dimensional context

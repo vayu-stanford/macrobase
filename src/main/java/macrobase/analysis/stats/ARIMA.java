@@ -113,4 +113,10 @@ public class ARIMA extends TimeSeriesOutlierDetector {
             return latestScore;
         }
     }
+
+	@Override
+	public void train(BatchModel batchModel) {
+		// TODO Auto-generated method stub
+		
+	}
 }

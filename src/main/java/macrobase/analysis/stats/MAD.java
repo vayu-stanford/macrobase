@@ -16,10 +16,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 public class MAD extends BatchTrainScore {
     private static final Logger log = LoggerFactory.getLogger(MAD.class);
 
-    private double median;
-    private double MAD;
-
-    private final Timer medianComputation = MacroBase.metrics.timer(name(MAD.class, "medianComputation"));
+   private final Timer medianComputation = MacroBase.metrics.timer(name(MAD.class, "medianComputation"));
     private final Timer residualComputation = MacroBase.metrics.timer(name(MAD.class, "residualComputation"));
     private final Timer residualMedianComputation = MacroBase.metrics.timer(
             name(MAD.class, "residualMedianComputation"));
@@ -34,6 +31,12 @@ public class MAD extends BatchTrainScore {
         super(conf);
     }
 
+    MADModel madModel = new MADModel();
+    public class MADModel implements BatchTrainScore.BatchModel{
+    	 private double median;
+    	 private double MAD;
+    }
+    
     @Override
     public void train(List<Datum> data) {
         Timer.Context context = medianComputation.time();
@@ -43,17 +46,17 @@ public class MAD extends BatchTrainScore {
                                            y.getMetrics().getEntry(0)));
 
         if (data.size() % 2 == 0) {
-            median = (data.get(data.size() / 2 - 1).getMetrics().getEntry(0) +
+        	madModel.median = (data.get(data.size() / 2 - 1).getMetrics().getEntry(0) +
                       data.get(data.size() / 2).getMetrics().getEntry(0)) / 2;
         } else {
-            median = data.get((int) Math.ceil(data.size() / 2)).getMetrics().getEntry(0);
+        	madModel.median = data.get((int) Math.ceil(data.size() / 2)).getMetrics().getEntry(0);
         }
         context.stop();
 
         context = residualComputation.time();
         List<Double> residuals = new ArrayList<>(data.size());
         for (Datum d : data) {
-            residuals.add(Math.abs(d.getMetrics().getEntry(0) - median));
+            residuals.add(Math.abs(d.getMetrics().getEntry(0) - madModel.median));
         }
         context.stop();
 
@@ -61,13 +64,13 @@ public class MAD extends BatchTrainScore {
         residuals.sort((a, b) -> Double.compare(a, b));
 
         if (data.size() % 2 == 0) {
-            MAD = (residuals.get(data.size() / 2 - 1) +
+        	madModel.MAD = (residuals.get(data.size() / 2 - 1) +
                    residuals.get(data.size() / 2)) / 2;
         } else {
-            MAD = residuals.get((int) Math.ceil(data.size() / 2));
+        	madModel.MAD = residuals.get((int) Math.ceil(data.size() / 2));
         }
 
-        if (MAD == 0) {
+        if (madModel.MAD == 0) {
             zeroMADs.inc();
             int lowerTrimmedMeanIndex = (int) (residuals.size() * trimmedMeanFallback);
             int upperTrimmedMeanIndex = (int) (residuals.size() * (1 - trimmedMeanFallback));
@@ -76,19 +79,28 @@ public class MAD extends BatchTrainScore {
             for (int i = lowerTrimmedMeanIndex; i < upperTrimmedMeanIndex; ++i) {
                 sum += residuals.get(i);
             }
-            MAD = sum / (upperTrimmedMeanIndex - lowerTrimmedMeanIndex);
-            assert (MAD != 0);
+            madModel.MAD = sum / (upperTrimmedMeanIndex - lowerTrimmedMeanIndex);
+            assert (madModel.MAD != 0);
         }
 
         context.stop();
 
-        log.trace("trained! median is {}, MAD is {}", median, MAD);
+        log.trace("trained! median is {}, MAD is {}", madModel.median, madModel.MAD);
     }
+    
+    @Override
+	public void train(BatchModel batchModel) {
+		if(batchModel instanceof MADModel){
+			MADModel batchModelCast = (MADModel)batchModel;
+			madModel.median = batchModelCast.median;
+			madModel.MAD = batchModelCast.MAD;
+		}
+	}
 
     @Override
     public double score(Datum datum) {
         double point = datum.getMetrics().getEntry(0);
-        return Math.abs(point - median) / (MAD);
+        return Math.abs(point - madModel.median) / (madModel.MAD);
     }
 
     @Override
@@ -97,4 +109,6 @@ public class MAD extends BatchTrainScore {
         log.trace("setting zscore of {} threshold to {}", zscore, ret);
         return ret;
     }
+
+	
 }

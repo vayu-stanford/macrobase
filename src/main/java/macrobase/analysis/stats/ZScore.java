@@ -51,4 +51,10 @@ public class ZScore extends BatchTrainScore {
     public double getZScoreEquivalent(double zscore) {
         return zscore;
     }
+
+	@Override
+	public void train(BatchModel batchModel) {
+		// TODO Auto-generated method stub
+		
+	}
 }

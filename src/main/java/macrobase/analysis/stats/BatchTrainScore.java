@@ -39,11 +39,21 @@ public abstract class BatchTrainScore {
         }
     }
     
+   
+    
+    
+    
     // Constructor with this signature should be implemented by subclasses
     public BatchTrainScore(MacroBaseConf conf) {}
 
     public abstract void train(List<Datum> data);
 
+
+    public interface BatchModel{
+    	
+    }
+    public abstract void train(BatchModel batchModel);
+    
     public abstract double score(Datum datum);
 
     @Deprecated

@@ -98,4 +98,10 @@ public class MovingAverage extends TimeSeriesOutlierDetector {
 
         return percentDiff;
     }
+
+	@Override
+	public void train(BatchModel batchModel) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -184,5 +184,11 @@ public class KDE extends BatchTrainScore {
         throw new RuntimeException("ZScore equivalence is not implemented yet.");
     }
 
+	@Override
+	public void train(BatchModel batchModel) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }
