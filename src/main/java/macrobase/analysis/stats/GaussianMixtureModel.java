@@ -9,11 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 
-public class GaussianMixtureModel extends BatchTrainScore {
+public class GaussianMixtureModel extends BatchMixtureModel {
     private static final Logger log = LoggerFactory.getLogger(GaussianMixtureModel.class);
 
     private int K;  // Number of mixture components
@@ -43,9 +41,7 @@ public class GaussianMixtureModel extends BatchTrainScore {
         mu = new ArrayList<>(this.K);
         phi = new double[K];
         mixtureDistributions =  new ArrayList<>(K);
-        Random rand = new Random();
         sigma = new ArrayList<>(K);
-        HashSet<Integer> pointsChosen = new HashSet<Integer>();
         // Initialize cluster means using Gonzalez algorithm (takes O(KN) time).
         // ..Almost the same as one iteration of EM
 	    // Picks a random point, than each next point is the one
@@ -53,26 +49,8 @@ public class GaussianMixtureModel extends BatchTrainScore {
         // Picking points uniformly does not work, because it sometimes leads
         // to a local maximum in EM optimization where two cluster are replaces with
         // twice the cluster that represents both.
+        mu = this.gonzalezInitilizeMixtureCenters(data, this.K);
         for (int k=0; k < K; k++) {
-            int index = rand.nextInt(data.size());
-            if (k > 0) {
-                double maxDistance = 0;
-                for (int n = 0; n < N; n++) {
-                    if (pointsChosen.contains(n)) {
-                        continue;
-                    }
-                    double distance = 0;
-                    for (int j=0; j<k; j++) {
-                        distance += data.get(n).getMetrics().getDistance(mu.get(j));
-                    }
-                    if (distance > maxDistance) {
-                        maxDistance = distance;
-                        index = n;
-                    }
-                }
-            }
-            mu.add(data.get(index).getMetrics());
-            pointsChosen.add(index);
             sigma.add(MatrixUtils.createRealIdentityMatrix(dimensions));
             mixtureDistributions.add(new MultivariateNormal(mu.get(k), sigma.get(k)));
             phi[k] = 1. / K;
@@ -129,7 +107,7 @@ public class GaussianMixtureModel extends BatchTrainScore {
             log.debug("cluster centers are at {}", mu);
 
             double improvement = (logLikelihood - oldLogLikelihood) / ( -logLikelihood);
-            if ( improvement > 0 && improvement < this.EMCutoffProgress) {
+            if ( improvement >= 0 && improvement < this.EMCutoffProgress) {
                 log.debug("Breaking because imporovemnt was {} percent", improvement * 100);
                 break;
             } else {
@@ -160,5 +138,6 @@ public class GaussianMixtureModel extends BatchTrainScore {
     public List<RealMatrix> getCovariance() {
         return sigma;
     }
+
 }
 
